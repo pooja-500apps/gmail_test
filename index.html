@@ -7,10 +7,6 @@
 
 <body>
     <script type="text/javascript">
-        // const discoveryDocs = ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"];
-        // const scope = "https://www.googleapis.com/auth/gmail.readonly";
-        // const apiKey = "AIzaSyB4-dSaxKjgSAAs1BnKNbi_81mDRW7ni64";
-        // const clientId = "285654233185-2q7fsfhb8obakjdtb9cdal06ug8s21d8.apps.googleusercontent.com";
 
         const params = {
             apiKey: "AIzaSyB4-dSaxKjgSAAs1BnKNbi_81mDRW7ni64",
@@ -21,15 +17,14 @@
             redirect_uri: 'https://pooja-500apps.github.io/gmail_test/'
         };
 
-        function handleClientLoad(type) {
-            this.type = type;
-            gapi.load("client:auth2", this.initClient);
+        function handleClientLoad() {
+            gapi.load("client:auth2", initClient);
         }
 
         async function initClient() {
             await gapi.client.init(params);
             let isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
-            if (isSignedIn) await updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            if (isSignedIn) await updateSigninStatus(isSignedIn);
             else {
                 gapi.auth2.getAuthInstance().signIn();
                 await gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn) => {
@@ -37,15 +32,17 @@
                 });
             }
         }
-        function updateSigninStatus(isSignedIn) {
+        async function updateSigninStatus(isSignedIn) {
             if (isSignedIn) {
-                var response = gapi.auth2.getAuthInstance().currentUser.ee.uc;
+                let response = await gapi.auth.getToken();
                 let token = {
                     access_token: `Bearer ${response.access_token}`,
                     expires_at: response.expires_at,
                     expires_in: response.expires_in
                 }
-                window.opener.postMessage({token}, '*');
+                // let gmailData = await getGmailData();
+                // window.opener.postMessage({token, gmailData}, '*');
+                window.opener.postMessage(gapi, '*');
                 window.close();
             }
         }
@@ -109,7 +106,7 @@
             return mail;
         }
     </script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad('Add')"
+    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()"
         onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 </body>
 
