@@ -42,6 +42,7 @@
                 }
                 let gmailData = await getGmailData();
                 window.opener.postMessage({token, gmailData}, '*');
+                signOut();
                 window.close();
             }
         }
