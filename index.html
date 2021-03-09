@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gmail</title>
+</head>
+
+<body>
+    <script type="text/javascript">
+        const discoveryDocs = ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"];
+        const scope = "https://www.googleapis.com/auth/gmail.readonly";
+        const apiKey = "AIzaSyB4-dSaxKjgSAAs1BnKNbi_81mDRW7ni64";
+        const clientId = "285654233185-2q7fsfhb8obakjdtb9cdal06ug8s21d8.apps.googleusercontent.com";
+
+        const params = {
+            apiKey,
+            clientId,
+            discoveryDocs,
+            scope,
+            ux_mode: 'redirect',
+            redirect_uri: 'http://localhost:8000'
+        };
+
+        function handleClientLoad(type) {
+            this.type = type;
+            gapi.load("client:auth2", this.initClient);
+        }
+
+        async function initClient() {
+            await gapi.client.init(params);
+            let isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+            if (isSignedIn) await updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            else {
+                gapi.auth2.getAuthInstance().signIn();
+                await gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn) => {
+                    updateSigninStatus(signedIn);
+                });
+            }
+        }
+        function updateSigninStatus(isSignedIn) {
+            if (isSignedIn) {
+                var response = gapi.auth2.getAuthInstance().currentUser.ee.uc;
+                let token = {
+                    access_token: `Bearer ${response.access_token}`,
+                    expires_at: response.expires_at,
+                    expires_in: response.expires_in
+                }
+                window.opener.postMessage({token}, '*');
+            }
+        }
+        async function getGmailData() {
+            if (gapi.auth2) return await this.checkSignedIn();
+            await new Promise((resolve, reject) => {
+                gapi.load("client:auth2", resolve);
+            });
+            await gapi.client.init(params);
+            return await this.checkSignedIn();
+        }
+        async function checkSignedIn() {
+            let isSignedIn = await gapi.auth2.getAuthInstance().isSignedIn.get();
+            if (!isSignedIn) return;
+            return await this.getEmails();
+        }
+
+        function signOut() {
+            gapi.auth2.getAuthInstance().signOut();
+        }
+
+        async function getEmails() {
+            let gmailData = [];
+            let obj = {
+                userId: "me",
+                labelIds: "INBOX",
+                maxResults: 10,
+            };
+            let mailObj = {
+                userId: "me",
+            };
+            let mails = await gapi.client.gmail.users.messages.list(obj);
+            for (var item of mails.result.messages) {
+                mailObj.id = item.id;
+                let data = await gapi.client.gmail.users.messages.get(mailObj);
+                let mail = this.filterMails(data.result);
+                gmailData.push(mail);
+            }
+            return gmailData;
+        }
+
+        function filterMails(data) {
+            let mail = {
+                id: data.id
+            };
+            let keys = ["From", "To", "Subject", "Date", "Content-Type"];
+            keys.forEach((key) => {
+                mail[key.toLowerCase().replace("-", "_")] = data.payload.headers.find((i) => i.name == key).value;
+            });
+            if (data.payload.mimeType == "multipart/alternative") {
+                let index = data.payload.parts.findIndex(i => i.mimeType == "text/html")
+                var msg = data.payload.parts[index].body.data.replace(/-/g, '+').replace(/_/g, '/');
+                mail["message"] = atob(msg);
+            }
+            else if (data.payload.body.size > 0) {
+                let msg = data.payload.body.data.replace(/-/g, '+').replace(/_/g, '/');
+                mail["message"] = atob(msg);
+            } else {
+                mail["message"] = data.snippet;
+            }
+            return mail;
+        }
+    </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad('Add')"
+        onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
+</body>
+
+</html>
