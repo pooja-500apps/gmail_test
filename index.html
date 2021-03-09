@@ -40,9 +40,8 @@
                     expires_at: response.expires_at,
                     expires_in: response.expires_in
                 }
-                // let gmailData = await getGmailData();
-                // window.opener.postMessage({token, gmailData}, '*');
-                window.opener.postMessage(gapi, '*');
+                let gmailData = await getGmailData();
+                window.opener.postMessage({token, gmailData}, '*');
                 window.close();
             }
         }
