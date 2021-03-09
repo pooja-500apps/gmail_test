@@ -46,6 +46,7 @@
                     expires_in: response.expires_in
                 }
                 window.opener.postMessage({token}, '*');
+                window.close();
             }
         }
         async function getGmailData() {
