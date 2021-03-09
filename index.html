@@ -7,16 +7,16 @@
 
 <body>
     <script type="text/javascript">
-        const discoveryDocs = ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"];
-        const scope = "https://www.googleapis.com/auth/gmail.readonly";
-        const apiKey = "AIzaSyB4-dSaxKjgSAAs1BnKNbi_81mDRW7ni64";
-        const clientId = "285654233185-2q7fsfhb8obakjdtb9cdal06ug8s21d8.apps.googleusercontent.com";
+        // const discoveryDocs = ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"];
+        // const scope = "https://www.googleapis.com/auth/gmail.readonly";
+        // const apiKey = "AIzaSyB4-dSaxKjgSAAs1BnKNbi_81mDRW7ni64";
+        // const clientId = "285654233185-2q7fsfhb8obakjdtb9cdal06ug8s21d8.apps.googleusercontent.com";
 
         const params = {
-            apiKey,
-            clientId,
-            discoveryDocs,
-            scope,
+            apiKey: "AIzaSyB4-dSaxKjgSAAs1BnKNbi_81mDRW7ni64",
+            clientId: "285654233185-2q7fsfhb8obakjdtb9cdal06ug8s21d8.apps.googleusercontent.com",
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"],
+            scope: "https://www.googleapis.com/auth/gmail.readonly",
             ux_mode: 'redirect',
             redirect_uri: 'http://localhost:8000'
         };
