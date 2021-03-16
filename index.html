@@ -36,7 +36,7 @@
             if (isSignedIn) {
                 let response = {};
                 response.data = await gapi.auth.getToken();
-                response.client = gapi.client;
+                response.client = JSON.stringify(gapi.client);
                 window.opener.postMessage(response, '*');
                 signOut();
                 window.close();
