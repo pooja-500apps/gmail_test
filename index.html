@@ -22,6 +22,7 @@
                 gapi.auth2.getAuthInstance().signOut();
             }
             else if(event.data.type == "getEmails"){
+                signIn(event.data.token)
                 getEmails();
             }
         });
@@ -45,6 +46,25 @@
                 let response = await gapi.auth.getToken();
                 if(window.opener) window.opener.postMessage(response, '*');
                 window.close();
+            }
+        }
+
+        // async function getGmailData() {
+        //     let isSignedIn = await this.checkSignedIn();
+        //     if ((window._App.type == 'Update') || !isSignedIn) await this.handleClientLoad();
+        //     await this.getEmails();
+        // }
+
+        async function signIn(token) {
+            let isSignedIn = false;
+            try {
+                isSignedIn = await gapi.auth2.getAuthInstance().isSignedIn.get();
+            } catch (err) {
+                console.log(err);
+            }
+            if(!isSignedIn){
+                await gapi.auth.setToken(JSON.parse(token));
+                await gapi.auth2.getAuthInstance().isSignedIn.set(true);
             }
         }
 
@@ -90,7 +110,7 @@
             }
             return mail;
         }
-        
+
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};initClient()"
         onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
