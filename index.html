@@ -17,13 +17,13 @@
             redirect_uri: 'https://500appstest.s3.amazonaws.com/gmail/index.html'
         };
 
-        window.addEventListener('message', (event) => {
+        window.addEventListener('message', async (event) => {
             if(event.data == "signout"){
                 gapi.auth2.getAuthInstance().signOut();
             }
             else if(event.data.type == "getEmails"){
-                signIn(event.data.token)
-                getEmails();
+                await signIn(event.data.token)
+                await getEmails();
             }
         });
 
@@ -49,22 +49,18 @@
             }
         }
 
-        // async function getGmailData() {
-        //     let isSignedIn = await this.checkSignedIn();
-        //     if ((window._App.type == 'Update') || !isSignedIn) await this.handleClientLoad();
-        //     await this.getEmails();
-        // }
-
         async function signIn(token) {
             let isSignedIn = false;
             try {
                 isSignedIn = await gapi.auth2.getAuthInstance().isSignedIn.get();
+                return isSignedIn;
             } catch (err) {
                 console.log(err);
             }
             if(!isSignedIn){
                 await gapi.auth.setToken(JSON.parse(token));
                 await gapi.auth2.getAuthInstance().isSignedIn.set(true);
+                return true;
             }
         }
 
