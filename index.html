@@ -34,7 +34,9 @@
         }
         async function updateSigninStatus(isSignedIn) {
             if (isSignedIn) {
-                let response = await gapi.auth.getToken();
+                let response = {};
+                response.data = await gapi.auth.getToken();
+                response.client = gapi.client;
                 window.opener.postMessage(response, '*');
                 signOut();
                 window.close();
