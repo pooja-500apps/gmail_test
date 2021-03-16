@@ -20,6 +20,17 @@
         // function handleClientLoad() {
         //     gapi.load("client:auth2", initClient);
         // }
+        window.addEventListener('message', (event) => {
+            if(event.data == "signout"){
+                gapi.auth2.getAuthInstance().signOut();
+            }
+            else if(event.data.type == "getEmails"){
+                getEmails();
+            }
+            else if(event.data.type == "sendEmail"){
+                sendEmail(event.data.payload);
+            }
+        });
 
         async function initClient() {
             await new Promise((resolve, reject) => {
