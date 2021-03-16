@@ -88,8 +88,9 @@
                 let mail = this.filterMails(data.result);
                 gmailData.push(mail);
             }
-            this.emails = gmailData;
-            return gmailData;
+//             this.emails = gmailData;
+//             return gmailData;
+            window.top.postMessage({type: 'gmail', response: gmailData}, "*")
         }
 
         function filterMails(data) {
