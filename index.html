@@ -17,18 +17,12 @@
             redirect_uri: 'https://500appstest.s3.amazonaws.com/gmail/index.html'
         };
 
-        // function handleClientLoad() {
-        //     gapi.load("client:auth2", initClient);
-        // }
         window.addEventListener('message', (event) => {
             if(event.data == "signout"){
                 gapi.auth2.getAuthInstance().signOut();
             }
             else if(event.data.type == "getEmails"){
                 getEmails();
-            }
-            else if(event.data.type == "sendEmail"){
-                sendEmail(event.data.payload);
             }
         });
 
@@ -49,25 +43,9 @@
         async function updateSigninStatus(isSignedIn) {
             if (isSignedIn) {
                 let response = await gapi.auth.getToken();
-                window.opener.postMessage(response, '*');
+                if(window.opener) window.opener.postMessage(response, '*');
                 window.close();
             }
-        }
-
-        async function getGmailData() {
-            let isSignedIn = await this.checkSignedIn();
-            if ((window._App.type == 'Update') || !isSignedIn) await this.handleClientLoad();
-            await this.getEmails();
-        }
-
-        async function checkSignedIn() {
-            let isSignedIn = false;
-            try {
-                isSignedIn = await gapi.auth2.getAuthInstance().isSignedIn.get();
-            } catch (err) {
-                console.log(err);
-            }
-            return isSignedIn;
         }
 
         async function getEmails() {
@@ -88,8 +66,6 @@
                 let mail = this.filterMails(data.result);
                 gmailData.push(mail);
             }
-//             this.emails = gmailData;
-//             return gmailData;
             window.top.postMessage({type: 'gmail', response: gmailData}, "*")
         }
 
@@ -114,10 +90,7 @@
             }
             return mail;
         }
-
-        function signOut() {
-            gapi.auth2.getAuthInstance().signOut();
-        }
+        
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};initClient()"
         onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
