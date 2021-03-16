@@ -14,14 +14,17 @@
             discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"],
             scope: "https://www.googleapis.com/auth/gmail.readonly",
             ux_mode: 'redirect',
-            redirect_uri: 'https://pooja-500apps.github.io/gmail_test/'
+            redirect_uri: 'https://500appstest.s3.amazonaws.com/gmail/index.html'
         };
 
-        function handleClientLoad() {
-            gapi.load("client:auth2", initClient);
-        }
+        // function handleClientLoad() {
+        //     gapi.load("client:auth2", initClient);
+        // }
 
         async function initClient() {
+            await new Promise((resolve, reject) => {
+                gapi.load("client:auth2", resolve);
+            });
             await gapi.client.init(params);
             let isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
             if (isSignedIn) await updateSigninStatus(isSignedIn);
@@ -34,19 +37,77 @@
         }
         async function updateSigninStatus(isSignedIn) {
             if (isSignedIn) {
-                let response = {};
-                response.data = await gapi.auth.getToken();
-                response.client = JSON.stringify(gapi.client);
+                let response = await gapi.auth.getToken();
                 window.opener.postMessage(response, '*');
-                signOut();
                 window.close();
             }
         }
+
+        async function getGmailData() {
+            let isSignedIn = await this.checkSignedIn();
+            if ((window._App.type == 'Update') || !isSignedIn) await this.handleClientLoad();
+            await this.getEmails();
+        }
+
+        async function checkSignedIn() {
+            let isSignedIn = false;
+            try {
+                isSignedIn = await gapi.auth2.getAuthInstance().isSignedIn.get();
+            } catch (err) {
+                console.log(err);
+            }
+            return isSignedIn;
+        }
+
+        async function getEmails() {
+            let gmailData = [];
+            let obj = {
+                userId: "me",
+                labelIds: "INBOX",
+                maxResults: 10,
+            };
+            let mailObj = {
+                userId: "me",
+            };
+            let mails = await gapi.client.gmail.users.messages.list(obj);
+            console.log(mails)
+            for (var item of mails.result.messages) {
+                mailObj.id = item.id;
+                let data = await gapi.client.gmail.users.messages.get(mailObj);
+                let mail = this.filterMails(data.result);
+                gmailData.push(mail);
+            }
+            this.emails = gmailData;
+            return gmailData;
+        }
+
+        function filterMails(data) {
+            let mail = {
+                id: data.id,
+            };
+            let keys = ["From", "To", "Subject", "Date", "Content-Type"];
+            keys.forEach((key) => {
+                mail[key.toLowerCase().replace("-", "_")] = data.payload.headers.find((i) => i.name == key).value;
+            });
+            if (data.payload.mimeType == "multipart/alternative") {
+                let index = data.payload.parts.findIndex((i) => i.mimeType == "text/html");
+                if (index == -1) index = data.payload.parts.findIndex((i) => i.mimeType == "text/plain");
+                var msg = data.payload.parts[index].body.data.replace(/-/g, "+").replace(/_/g, "/");
+                mail["message"] = atob(msg);
+            } else if (data.payload.body.size > 0) {
+                let msg = data.payload.body.data.replace(/-/g, "+").replace(/_/g, "/");
+                mail["message"] = atob(msg);
+            } else {
+                mail["message"] = data.snippet;
+            }
+            return mail;
+        }
+
         function signOut() {
             gapi.auth2.getAuthInstance().signOut();
         }
     </script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()"
+    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};initClient()"
         onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 </body>
 
