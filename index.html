@@ -74,7 +74,6 @@
                 userId: "me",
             };
             let mails = await gapi.client.gmail.users.messages.list(obj);
-            console.log(mails)
             for (var item of mails.result.messages) {
                 mailObj.id = item.id;
                 let data = await gapi.client.gmail.users.messages.get(mailObj);
