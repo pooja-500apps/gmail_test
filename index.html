@@ -31,7 +31,11 @@
             await new Promise((resolve, reject) => {
                 gapi.load("client:auth2", resolve);
             });
-            await gapi.client.init(params);
+            try {
+                await gapi.client.init(params);
+            } catch(err) {
+                console.log(err);
+            }
             let isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
             if (isSignedIn) await updateSigninStatus(isSignedIn);
             else {
