@@ -79,15 +79,15 @@
             let mailObj = {
                 userId: "me",
             };
-//             if(gapi.client.gmail.users.resultSizeEstimate > 0) {
-                let mails = await gapi.client.gmail.users.messages.list(obj);
+            let mails = await gapi.client.gmail.users.messages.list(obj);
+            if(mails.result.resultSizeEstimate > 0) {
                 for (var item of mails.result.messages) {
                     mailObj.id = item.id;
                     let data = await gapi.client.gmail.users.messages.get(mailObj);
                     let mail = this.filterMails(data.result);
                     gmailData.push(mail);
                 }
-//             }
+            }
             window.top.postMessage({type: 'gmail', response: gmailData}, "*")
         }
 
