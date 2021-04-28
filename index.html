@@ -32,9 +32,6 @@
             await new Promise((resolve, reject) => {
                 gapi.load("client:auth2", resolve);
             });
-            await new Promise((resolve, reject) => {
-                gapi.load("gmail", "v1", resolve);
-            });
             try{
                 await gapi.client.init(params);
             } catch(err){
