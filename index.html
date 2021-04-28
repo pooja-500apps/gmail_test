@@ -22,7 +22,7 @@
                 gapi.auth2.getAuthInstance().signOut();
             }
             else if(event.data.type == "getEmails"){
-                if(!gapi) await initClient();
+                await initClient();
                 await signIn(event.data.token)
                 await getEmails(event.data.email);
             }
