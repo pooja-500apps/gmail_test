@@ -14,16 +14,16 @@
             discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"],
             scope: "https://www.googleapis.com/auth/gmail.readonly",
             ux_mode: 'redirect',
-            redirect_uri: 'https://pooja-500apps.github.io/gmail_test/index.html'
+            redirect_uri: 'https://pooja-500apps.github.io/gmail/index.html'
         };
 
         window.addEventListener('message', async (event) => {
-            if(event.data == "signout"){
+            if(event.data.type == "signout"){
                 gapi.auth2.getAuthInstance().signOut();
             }
             else if(event.data.type == "getEmails"){
                 await signIn(event.data.token)
-                await getEmails();
+                await getEmails(event.data.email);
             }
         });
 
@@ -31,9 +31,9 @@
             await new Promise((resolve, reject) => {
                 gapi.load("client:auth2", resolve);
             });
-            try {
+            try{
                 await gapi.client.init(params);
-            } catch(err) {
+            } catch(err){
                 console.log(err);
             }
             let isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
@@ -49,7 +49,7 @@
             if (isSignedIn) {
                 let response = await gapi.auth.getToken();
                 if(window.opener) window.opener.postMessage(response, '*');
-                else await getEmails();
+//                 else await getEmails();
                 window.close();
             }
         }
@@ -68,18 +68,19 @@
             } else return true;
         }
 
-        async function getEmails() {
+        async function getEmails(user_email) {
             let gmailData = [];
             let obj = {
                 userId: "me",
                 labelIds: "INBOX",
                 maxResults: 10,
+                q : user_email
             };
             let mailObj = {
                 userId: "me",
             };
-            if(gapi.client.gmail.users.resultSizeEstimate > 0){
-            let mails = await gapi.client.gmail.users.messages.list(obj);
+            if(gapi.client.gmail.users.resultSizeEstimate > 0) {
+                let mails = await gapi.client.gmail.users.messages.list(obj);
                 for (var item of mails.result.messages) {
                     mailObj.id = item.id;
                     let data = await gapi.client.gmail.users.messages.get(mailObj);
