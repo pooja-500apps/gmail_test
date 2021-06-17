@@ -50,7 +50,6 @@
             if (isSignedIn) {
                 let response = await gapi.auth.getToken();
                 if(window.opener) window.opener.postMessage(response, '*');
-//                 else await getEmails();
                 window.close();
             }
         }
